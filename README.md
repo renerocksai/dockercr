@@ -10,8 +10,8 @@ If you want to host a docker registry on its own dedicated host, skip the next
 section and go straight [to the real
 stuff](#setting-up-an-ssh-secured-docker-container-registry-on-a-dedicated-host).
 
-Free ghcr.io might be too limiting for some of us as there is a 10GB download
-limit per month for downloads from outside of GH actions.
+Free [ghcr.io](https://ghcr.io) might be too limiting for some of us as there is
+a 10GB download limit per month for downloads from outside of GH actions.
 
 GitHub personal access tokens and stuff can be a pain. TLS certificates and CAs
 for a self-hosted registry - we don't even bother with. We already have SSH for
@@ -55,13 +55,11 @@ want to keep it the `-L` way.
 
 ## Setting up an SSH-secured Docker Container Registry on a dedicated host
 
-#### Auto-establishing SSH tunnel to registry before pushing / pulling
-
 Imagine we host the registry on a third machine called `REGHOST` with IP
 `88.88.88.88`. Now, both our client when pushing and the PROD machine when
 pulling need to establish an SSH-connection with port forwarding to the REGHOST.
 
-##### On the REGHOST
+### On the REGHOST
 
 We prepare a special user that runs our docker registry (optional):
 
@@ -70,28 +68,29 @@ We prepare a special user that runs our docker registry (optional):
 sudo useradd -m dockercr -G docker
 sudo passwd dockercr
 
+# become the dockercr user
+sudo su - dockercr
+
+# set up a basic .ssh folder
+mkdir .ssh
+chmod 700 .ssh
+touch .ssh/authorized_keys
+chmod 600 .ssh/authorized_keys
 ```
 
-Run the docker registry, binding to the loopback interface, on port 5000:
+Now, run the docker registry, binding to the loopback interface, on port 5000:
 
 ```shell
 docker run -d -p 5000:5000 -e REGISTRY_HTTP_ADDR=127.0.0.1 \
        --restart=always --name registry registry:2
 ```
 
-For added coolness, we run the following on all involved machines:
-
-```shell
-sudo 'echo "cr.boss.org 127.0.0.1" >> /etc/hosts"'
-```
-
-This gets us the fictional registry host `cr.boss.org`.
-
-##### On all clients (pushing, pulling images)
+### On all clients (pushing, pulling images)
 
 **Note:** We will not use the `.ssh/config` file this time, as we will use a
-script anyway. Distributing all-in-one scripts is easier than scripts plus ssh
-configs. Feel free to separate SSH options out into the config file.
+script anyway. Distributing all-in-one scripts is easier than doing so with
+scripts plus ssh configs. Feel free to separate SSH options out into the config
+file.
 
 The basic idea is to establish the SSH tunnel before any docker push or pull
 operation. SSH's default port-forwarding behavior is suited well for this. From
@@ -108,11 +107,29 @@ That means:
 - SSH will always wait until the last push/pull has finished
 - SSH will cause no trouble attempting to establish an already existing tunnel
 
-For security reasons, we are going to create a dedicated SSH key pair for
-container registry communication:
+#### Preparations
+
+For added coolness, we run the following on all involved machines:
 
 ```shell
-ssh-keygen -t rsa
+sudo 'echo "cr.boss.org 127.0.0.1" >> /etc/hosts"'
+```
+
+This gets us the fictional registry host `cr.boss.org`.
+
+For security reasons, we are going to create a dedicated SSH key pair for
+container registry communication and register it with the REGHOST.
+
+```shell
+ssh-keygen -t rsa -f .ssh/id_rsa_dockercr
+REGHOST=88.88.88.88
+ssh-copy-id -i .ssh/id_rsa_dockercr dockercr@$REGHOST
+```
+
+It is up to you if you want to provide a passphrase.
+
+#### Pushing and pulling
+
 Our new docker-push command:
 
 ```shell
@@ -128,7 +145,9 @@ REG_ALIAS=cr.boss.org           # our fake repository name
 REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
 
 
-ssh -f -L 5000:127.0.0.1:5000 $REGHOST -c 'sleep 10' 2> /dev/null &
+ssh -f -L 5000:127.0.0.1:5000 \
+       -i $REG_KEY dockercr@$REGHOST \
+       -c 'sleep 10' 2> /dev/null &
 docker tag $1 $REG_ALIAS:5000/$1
 docker push $REG_ALIAS:5000/$1
 wait
@@ -144,10 +163,13 @@ if [ $# -lt 1 ] ; then
 fi
 
 # Config
-REGHOST=88.88.88.88     # put ip / name of REGHOST here
-REG_ALIAS=cr.boss.org    # our fake repository name
+REGHOST=88.88.88.88             # put ip / name of REGHOST here
+REG_ALIAS=cr.boss.org           # our fake repository name
+REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
 
-ssh -f -L 5000:127.0.0.1:5000 REGHOST -c 'sleep 10' 2> /dev/null &
+ssh -f -L 5000:127.0.0.1:5000 \
+       -i $REG_KEY dockercr@$REGHOST \
+       -c 'sleep 10' 2> /dev/null &
 docker pull $REG_ALIAS:5000/$1
 wait
 ```
