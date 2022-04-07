@@ -7,8 +7,8 @@ If you only want to quickly push stuff to 1 production host, see [the next
 section](#pushing-docker-images-to-production---like-a-boss).
 
 If you want to host a docker registry on its own dedicated host, skip the next
-section and go straight [to the next
-section](#setting-up-an-ssh-secured-docker-container-registry-on-a-dedicated-host).
+section and go straight [to the real
+stuff](#setting-up-an-ssh-secured-docker-container-registry-on-a-dedicated-host).
 
 Free ghcr.io might be too limiting for some of us as there is a 10GB download
 limit per month for downloads from outside of GH actions.
