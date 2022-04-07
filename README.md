@@ -1,7 +1,7 @@
 # dockercr
 
 Set up a docker container registry using just SSH and docker. No TLS, no CA, no
-https, no PA or other crap required.
+HTTPS, no PA or other crap required.
 
 If you only want to quickly push stuff to 1 production host, see [the next
 section](#pushing-docker-images-to-production---like-a-boss).
@@ -81,6 +81,7 @@ chmod 600 .ssh/authorized_keys
 Now, run the docker registry, binding to the loopback interface, on port 5000:
 
 ```shell
+# we're still the dockercr user
 docker run -d -p 5000:5000 -e REGISTRY_HTTP_ADDR=127.0.0.1 \
        --restart=always --name registry registry:2
 ```
