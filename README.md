@@ -4,7 +4,7 @@ Set up a docker container registry using just SSH and docker. No TLS, no CA, no
 https, no PA or other crap required.
 
 If you only want to quickly push stuff to 1 production host, see [the next
-section](#pushing-docker-images-to-production-like-a-boss).
+section](#pushing-docker-images-to-production---like-a-boss).
 
 If you want to host a docker registry on its own dedicated host, skip the next
 section and go straight [to the next
