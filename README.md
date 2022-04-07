@@ -1,7 +1,7 @@
 # dockercr
 
-Here I show how to set up a docker container registry using just SSH and docker.
-No TLS, no CA, no https, no PA or other crap required.
+Set up a docker container registry using just SSH and docker. No TLS, no CA, no
+https, no PA or other crap required.
 
 ## Pushing the docker images to production - like a boss
 
