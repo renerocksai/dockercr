@@ -140,7 +140,7 @@ if [ $# -lt 1 ] ; then
     exit 1
 fi
 
-# Config
+# Config - maybe put me in an .env file
 REGHOST=88.88.88.88             # put ip / name of REGHOST here
 REG_ALIAS=cr.boss.org           # our fake repository name
 REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
@@ -163,7 +163,8 @@ if [ $# -lt 1 ] ; then
     exit 1
 fi
 
-# Config
+# Config - maybe put me in an .env file
+REGHOST=88.88.88.88             # put ip / name of REGHOST here
 REGHOST=88.88.88.88             # put ip / name of REGHOST here
 REG_ALIAS=cr.boss.org           # our fake repository name
 REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
