@@ -3,15 +3,15 @@
 Set up a docker container registry using just SSH and docker. No TLS, no CA, no
 https, no PA or other crap required.
 
-## Pushing the docker images to production - like a boss
+If you only want to quickly push stuff to 1 production host, see [the next
+section](#pushing-docker-images-to-production-like-a-boss).
 
-Free ghcr.io might be too limiting for us as there is a 10GB download limit per
-month for downloads from outside of GH actions -- which is exactly what we do
-when pulling from the prod machine. If we make rapid changes to all our 3 images
-of ca. 1 GB each -- we might run into a limit when we need it the least. If, for
-some reason, we wanted to share our 9GB `flutter-nvim-stable`
-containing-everything-one-might-ever-need container, we would be out of luck
-with ghcr.io after just a single pull.
+If you want to host a docker registry on its own dedicated host, skip the next
+section and go straight [to the next
+section](#setting-up-an-ssh-secured-docker-container-registry-on-a-dedicated-host).
+
+Free ghcr.io might be too limiting for some of us as there is a 10GB download
+limit per month for downloads from outside of GH actions.
 
 GitHub personal access tokens and stuff can be a pain. TLS certificates and CAs
 for a self-hosted registry - we don't even bother with. We already have SSH for
@@ -21,7 +21,7 @@ connections.
 So instead of following the manual, we set up a local docker registry and handle
 the rest via SSH.
 
-### TL;DR
+## Pushing docker images to production - like a boss
 
 - set up SSH port forwarding of 5000:5000 to PROD in `.ssh/config`
 - ssh into the PROD machine to activate the port forwarding
@@ -53,13 +53,13 @@ the registry locally. That would guarantee we always have an SSH tunnel before
 we pull. But, who knows, if we host the registry on a 3rd machine - we probably
 want to keep it the `-L` way.
 
-## Setting up an SSH-secured Docker Container Registry in the Cloud
+## Setting up an SSH-secured Docker Container Registry on a dedicated host
 
 #### Auto-establishing SSH tunnel to registry before pushing / pulling
 
 Imagine we host the registry on a third machine called `REGHOST` with IP
-88.88.88.88. Now, both our client when pushing and the PROD machine when pulling
-need to establish an SSH-connection with port forwarding to the REGHOST.
+`88.88.88.88`. Now, both our client when pushing and the PROD machine when
+pulling need to establish an SSH-connection with port forwarding to the REGHOST.
 
 ##### On the REGHOST
 
@@ -82,10 +82,10 @@ docker run -d -p 5000:5000 -e REGISTRY_HTTP_ADDR=127.0.0.1 \
 For added coolness, we run the following on all involved machines:
 
 ```shell
-sudo 'echo "cr.nim.org 127.0.0.1" >> /etc/hosts"'
+sudo 'echo "cr.boss.org 127.0.0.1" >> /etc/hosts"'
 ```
 
-This gets us the fictional registry host `cr.nim.org`.
+This gets us the fictional registry host `cr.boss.org`.
 
 ##### On all clients (pushing, pulling images)
 
@@ -123,9 +123,9 @@ if [ $# -lt 1 ] ; then
 fi
 
 # Config
-REGHOST=88.88.88.88              # put ip / name of REGHOST here
-REG_ALIAS=cr.nim.org             # our fake repository name
-REG_KEY=$HOME/.ssh/id_rsa_nimcr  # private key used for SSH-auth
+REGHOST=88.88.88.88             # put ip / name of REGHOST here
+REG_ALIAS=cr.boss.org           # our fake repository name
+REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
 
 
 ssh -f -L 5000:127.0.0.1:5000 $REGHOST -c 'sleep 10' 2> /dev/null &
@@ -145,7 +145,7 @@ fi
 
 # Config
 REGHOST=88.88.88.88     # put ip / name of REGHOST here
-REG_ALIAS=cr.nim.org    # our fake repository name
+REG_ALIAS=cr.boss.org    # our fake repository name
 
 ssh -f -L 5000:127.0.0.1:5000 REGHOST -c 'sleep 10' 2> /dev/null &
 docker pull $REG_ALIAS:5000/$1
