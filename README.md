@@ -37,7 +37,7 @@ the rest via SSH.
   - `docker pull localhost:5000/whatever`
 - **TA-DAH**! SSH-authenticated docker registry!
 
-If we're really fancy, we add `boss.cr.io 127.0.0.1` into `/etc/hosts` of our
+If we're really fancy, we add `127.0.0.1 boss.cr.io` into `/etc/hosts` of our
 client and PROD - and push to and pull from `boss.cr.io:5000`.
 
 As the registry keeps running, we can just keep pushing and pulling from now on.
