@@ -113,7 +113,7 @@ That means:
 For added coolness, we run the following on all involved machines:
 
 ```shell
-echo "127.0.0.1 cr.boss.org" |sudo tee -a /etc/hosts"'
+echo "127.0.0.1 cr.boss.org" |sudo tee -a /etc/hosts"
 ```
 
 For NixOS:
