@@ -9,8 +9,8 @@ REGHOST=88.88.88.88             # put ip / name of REGHOST here
 REG_ALIAS=cr.boss.org           # our fake repository name
 REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
 
-ssh -f -L 5000:127.0.0.1:5000 \
+ssh -f -L 5050:127.0.0.1:5050 \
        -i $REG_KEY dockercr@$REGHOST \
-       -c 'sleep 10' 2> /dev/null &
-docker pull $REG_ALIAS:5000/$1
+       'sleep 10' &
+docker pull $REG_ALIAS:5050/$1
 wait

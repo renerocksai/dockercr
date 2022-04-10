@@ -113,7 +113,16 @@ That means:
 For added coolness, we run the following on all involved machines:
 
 ```shell
-sudo 'echo "cr.boss.org 127.0.0.1" >> /etc/hosts"'
+echo "127.0.0.1 cr.boss.org" |sudo tee -a /etc/hosts"'
+```
+
+For NixOS:
+
+```nix
+networking.extraHosts =
+  ''
+    127.0.0.1 cr.boss.org
+  '';
 ```
 
 This gets us the fictional registry host `cr.boss.org`.
@@ -148,7 +157,7 @@ REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
 
 ssh -f -L 5000:127.0.0.1:5000 \
        -i $REG_KEY dockercr@$REGHOST \
-       -c 'sleep 10' 2> /dev/null &
+       "sleep 10" &
 docker tag $1 $REG_ALIAS:5000/$1
 docker push $REG_ALIAS:5000/$1
 wait
@@ -165,13 +174,12 @@ fi
 
 # Config - maybe put me in an .env file
 REGHOST=88.88.88.88             # put ip / name of REGHOST here
-REGHOST=88.88.88.88             # put ip / name of REGHOST here
 REG_ALIAS=cr.boss.org           # our fake repository name
 REG_KEY=$HOME/.ssh/id_rsa_boss  # private key used for SSH-auth
 
 ssh -f -L 5000:127.0.0.1:5000 \
        -i $REG_KEY dockercr@$REGHOST \
-       -c 'sleep 10' 2> /dev/null &
+       "sleep 10" &
 docker pull $REG_ALIAS:5000/$1
 wait
 ```
